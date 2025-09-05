@@ -108,7 +108,7 @@ const Hero = () => {
   };
 
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16" style={{ backgroundColor: '#f0f8ff' }}>
+    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-0 pb-0.5" style={{ backgroundColor: '#f0f8ff' }}>
       
       {/* Main Content */}
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">

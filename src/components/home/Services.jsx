@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './ShinyText.css'; // Import ShinyText CSS for enhanced effects
+import './ShinyText.css';
 
 const Services = () => {
   const [visibleCards, setVisibleCards] = useState([]);
@@ -68,7 +68,7 @@ const Services = () => {
   }, []);
 
   return (
-    <section id="services" className="relative py-20 overflow-hidden" style={{ backgroundColor: '#f0f8ff' }}>
+    <section id="services" className="relative py-2 overflow-hidden" style={{ backgroundColor: '#f0f8ff' }}>
       
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
@@ -86,11 +86,7 @@ const Services = () => {
         
         {/* Section Header */}
         <div className="text-center mb-16">
-          <div className="inline-block mb-4">
-            <span className="px-4 py-2 bg-white/30 backdrop-blur-sm rounded-full text-sm font-semibold text-slate-600 border border-white/40">
-              What We Offer
-            </span>
-          </div>
+        
           
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
             <span className="shiny-text bg-gradient-to-r from-slate-700 via-teal-600 to-red-500 bg-clip-text text-transparent">
@@ -98,17 +94,12 @@ const Services = () => {
             </span>
           </h2>
           
-          <p className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto mb-8 leading-relaxed">
-            Comprehensive full-stack development solutions designed to transform your digital vision into reality with cutting-edge technology and creative excellence.
-          </p>
+        
           
-          {/* Decorative line */}
-          <div className="flex items-center justify-center space-x-2">
-            <div className="w-8 h-1 bg-gradient-to-r from-transparent to-teal-500 rounded-full"></div>
-            <div className="w-16 h-1 bg-gradient-to-r from-teal-500 to-red-500 rounded-full"></div>
-            <div className="w-8 h-1 bg-gradient-to-r from-red-500 to-transparent rounded-full"></div>
-          </div>
+        
         </div>
+
+        
 
         {/* Enhanced Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-8 lg:gap-10">
