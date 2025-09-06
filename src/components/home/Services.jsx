@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './ShinyText.css';
+import './ShinyText.css'; // Import ShinyText CSS for enhanced effects
 
 const Services = () => {
   const [visibleCards, setVisibleCards] = useState([]);
@@ -68,7 +68,7 @@ const Services = () => {
   }, []);
 
   return (
-    <section id="services" className="relative py-2 overflow-hidden" style={{ backgroundColor: '#f0f8ff' }}>
+    <section id="services" className="relative py-20 overflow-hidden bg-white">
       
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
@@ -85,21 +85,20 @@ const Services = () => {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="text-center mb-16">
-        
-          
+        <div className="text-center mb-8">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-            <span className="shiny-text bg-gradient-to-r from-slate-700 via-teal-600 to-red-500 bg-clip-text text-transparent">
+            <span className="shiny-text bg-gradient-to-r from-slate-700 via-teal-600 to-red-500 bg-clip-text">
               Our Services
             </span>
           </h2>
           
-        
-          
-        
+          {/* Decorative line */}
+          <div className="flex items-center justify-center space-x-2">
+            <div className="w-8 h-1 bg-gradient-to-r from-transparent to-teal-500 rounded-full"></div>
+            <div className="w-16 h-1 bg-gradient-to-r from-teal-500 to-red-500 rounded-full"></div>
+            <div className="w-8 h-1 bg-gradient-to-r from-red-500 to-transparent rounded-full"></div>
+          </div>
         </div>
-
-        
 
         {/* Enhanced Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-8 lg:gap-10">
@@ -107,7 +106,7 @@ const Services = () => {
             <div
               key={service.id}
               data-index={index}
-              className={`service-card group relative bg-white/40 backdrop-blur-lg rounded-3xl p-8 border border-white/50 ${service.borderGradient} transition-all duration-700 transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-teal-500/20 ${
+              className={`service-card group relative bg-white/40 backdrop-blur-lg rounded-3xl p-8 border border-white/50 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-slate-300/60 ${service.borderGradient} transition-all duration-700 transform hover:scale-[1.02] ${
                 visibleCards.includes(index) 
                   ? 'translate-y-0 opacity-100' 
                   : 'translate-y-10 opacity-0'

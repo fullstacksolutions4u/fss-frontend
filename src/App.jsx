@@ -5,7 +5,6 @@ import { AppProvider } from './context/AppContext';
 
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
-import ScrollToTop from './components/common/ScrollToTop.jsx';
 
 import Home from './pages/Home';
 import About from './components/home/About.jsx';
@@ -49,9 +48,7 @@ const App = () => {
             
             {/* Footer */}
             <Footer />
-            
-            {/* Scroll to Top Button */}
-            <ScrollToTop />
+          
           </div>
         </AppProvider>
       </AuthProvider>

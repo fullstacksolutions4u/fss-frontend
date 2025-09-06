@@ -1,25 +1,10 @@
 import React, { useState } from 'react';
+import logo from '../../assets/logo_transparent.png';
 
 const Footer = () => {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const quickLinks = [
-    { name: 'Home', href: '#home' },
-    { name: 'About', href: '#about' },
-    { name: 'Services', href: '#services' },
-    { name: 'Portfolio', href: '#portfolio' },
-    { name: 'Contact', href: '#contact' }
-  ];
-
-  const serviceLinks = [
-    { name: 'Frontend Development', href: '#services' },
-    { name: 'Backend Development', href: '#services' },
-    { name: 'Full Stack Apps', href: '#services' },
-    { name: 'Web Performance', href: '#services' },
-    { name: 'Maintenance & Support', href: '#services' }
-  ];
 
   const socialLinks = [
     {
@@ -59,14 +44,6 @@ const Footer = () => {
       url: 'https://instagram.com/fullstacksolutions'
     }
   ];
-
-  const handleSmoothScroll = (e, href) => {
-    e.preventDefault();
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   const handleNewsletterSubmit = async (e) => {
     e.preventDefault();
@@ -130,189 +107,68 @@ const Footer = () => {
       </div>
 
       {/* Main Footer Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+        <div className="flex flex-wrap items-center justify-center gap-2 lg:gap-8">
           
-          {/* Company Info */}
-          <div className="lg:col-span-1">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-teal-600 to-teal-800 rounded-lg flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-xl">F</span>
-              </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-teal-400 to-red-400 bg-clip-text text-transparent">
-                Full Stack Solutions
-              </span>
+         
+
+          <div className="flex items-center">
+            <img
+              src={logo}
+              alt="Full Stack Solutions Logo"
+              className="h-36 w-auto"
+            />
+          </div>
+          
+          {/* Social Links */}
+          <div className="flex items-center space-x-3">
+            {socialLinks.map((social) => (
+              <a
+                key={social.name}
+                href={social.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center text-slate-300 hover:text-white hover:bg-gradient-to-br hover:from-teal-500 hover:to-red-500 transition-all duration-300 transform hover:scale-110"
+                title={social.name}
+              >
+                {social.icon}
+              </a>
+            ))}
+          </div>
+
+          {/* Contact Info */}
+          <div className="flex flex-wrap items-center gap-4 lg:gap-6">
+            <div className="flex items-center space-x-2 text-slate-300">
+              <svg className="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <span className="text-sm">info@fullstacksolutions.com</span>
             </div>
-            
-            <p className="text-slate-300 mb-6 leading-relaxed">
-              Transforming ideas into powerful digital experiences with cutting-edge web development solutions. Your trusted partner for scalable, modern applications.
-            </p>
-            
-            {/* Social Links */}
-            <div className="flex space-x-4">
-              {socialLinks.map((social) => (
-                <a
-                  key={social.name}
-                  href={social.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center text-slate-300 hover:text-white hover:bg-gradient-to-br hover:from-teal-500 hover:to-red-500 transition-all duration-300 transform hover:scale-110"
-                  title={social.name}
-                >
-                  {social.icon}
-                </a>
-              ))}
+            <div className="flex items-center space-x-2 text-slate-300">
+              <svg className="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
+              <span className="text-sm">+1 (555) 123-4567</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <svg className="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span className="text-sm">123 Tech Street, Digital City</span>
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-6 relative">
-              Quick Links
-              <div className="absolute -bottom-2 left-0 w-12 h-0.5 bg-gradient-to-r from-teal-500 to-red-500"></div>
-            </h3>
-            <ul className="space-y-3">
-              {quickLinks.map((link) => (
-                <li key={link.name}>
-                  <a
-                    href={link.href}
-                    onClick={(e) => handleSmoothScroll(e, link.href)}
-                    className="text-slate-300 hover:text-white hover:text-teal-400 transition-colors duration-300 flex items-center group"
-                  >
-                    <span className="w-0 group-hover:w-2 h-0.5 bg-gradient-to-r from-teal-500 to-red-500 mr-0 group-hover:mr-3 transition-all duration-300"></span>
-                    {link.name}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Services */}
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-6 relative">
-              Our Services
-              <div className="absolute -bottom-2 left-0 w-12 h-0.5 bg-gradient-to-r from-teal-500 to-red-500"></div>
-            </h3>
-            <ul className="space-y-3">
-              {serviceLinks.map((service) => (
-                <li key={service.name}>
-                  <a
-                    href={service.href}
-                    onClick={(e) => handleSmoothScroll(e, service.href)}
-                    className="text-slate-300 hover:text-white hover:text-teal-400 transition-colors duration-300 flex items-center group"
-                  >
-                    <span className="w-0 group-hover:w-2 h-0.5 bg-gradient-to-r from-teal-500 to-red-500 mr-0 group-hover:mr-3 transition-all duration-300"></span>
-                    {service.name}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Contact & Newsletter */}
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-6 relative">
-              Stay Connected
-              <div className="absolute -bottom-2 left-0 w-12 h-0.5 bg-gradient-to-r from-teal-500 to-red-500"></div>
-            </h3>
-            
-            {/* Contact Info */}
-            <div className="space-y-4 mb-6">
-              <div className="flex items-center space-x-3 text-slate-300">
-                <svg className="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                <span className="text-sm">info@fullstacksolutions.com</span>
-              </div>
-              <div className="flex items-center space-x-3 text-slate-300">
-                <svg className="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-                <span className="text-sm">+1 (555) 123-4567</span>
-              </div>
-              <div className="flex items-center space-x-3 text-slate-300">
-                <svg className="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span className="text-sm">123 Tech Street, Digital City</span>
-              </div>
-            </div>
-
-            {/* Newsletter Signup */}
-            <div>
-              <h4 className="text-sm font-medium text-white mb-3">Subscribe to our newsletter</h4>
-              <div className="space-y-3">
-                <div className="flex">
-                  <input
-                    type="email"
-                    value={newsletterEmail}
-                    onChange={(e) => setNewsletterEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    className="flex-1 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-l-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300"
-                  />
-                  <button
-                    onClick={handleNewsletterSubmit}
-                    disabled={isSubmitting}
-                    className="px-4 py-2 bg-gradient-to-r from-teal-600 to-red-500 hover:from-red-500 hover:to-teal-600 text-white rounded-r-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50"
-                  >
-                    {isSubmitting ? (
-                      <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                    ) : (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                      </svg>
-                    )}
-                  </button>
-                </div>
-                
-                {/* Newsletter Status */}
-                {newsletterStatus && (
-                  <p className={`text-sm ${
-                    newsletterStatus.type === 'success' ? 'text-green-400' : 'text-red-400'
-                  }`}>
-                    {newsletterStatus.message}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
+        
         </div>
       </div>
 
       {/* Bottom Bar */}
       <div className="relative z-10 border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            
-            {/* Copyright */}
+          <div className="text-center">
             <div className="text-slate-400 text-sm">
-              © {new Date().getFullYear()} Full Stack Solutions. All rights reserved. Built with ❤️ using React & Tailwind CSS.
-            </div>
-            
-            {/* Legal Links */}
-            <div className="flex space-x-6 text-sm">
-              <a 
-                href="#privacy" 
-                className="text-slate-400 hover:text-white transition-colors duration-300"
-              >
-                Privacy Policy
-              </a>
-              <a 
-                href="#terms" 
-                className="text-slate-400 hover:text-white transition-colors duration-300"
-              >
-                Terms of Service
-              </a>
-              <a 
-                href="#cookies" 
-                className="text-slate-400 hover:text-white transition-colors duration-300"
-              >
-                Cookie Policy
-              </a>
+              © {new Date().getFullYear()} Full Stack Solutions
             </div>
           </div>
         </div>
