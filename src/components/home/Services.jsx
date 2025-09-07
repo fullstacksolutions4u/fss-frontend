@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './ShinyText.css'; // Import ShinyText CSS for enhanced effects
+import './ShinyText.css';
 
 const Services = () => {
   const [visibleCards, setVisibleCards] = useState([]);
@@ -47,7 +47,7 @@ const Services = () => {
     }
   ];
 
-  // Intersection Observer for scroll animations
+  
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -68,36 +68,26 @@ const Services = () => {
   }, []);
 
   return (
-    <section id="services" className="relative py-20 overflow-hidden bg-white">
+    <section id="services" className="relative py-2 overflow-hidden border-gray-500">
       
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-teal-500/20 to-transparent rounded-full blur-xl animate-pulse"></div>
         <div className="absolute bottom-20 right-10 w-40 h-40 bg-gradient-to-br from-red-500/20 to-transparent rounded-full blur-2xl animate-pulse delay-1000"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-slate-500/10 to-transparent rounded-full blur-3xl animate-pulse delay-500"></div>
-        
-        {/* Floating shapes */}
-        <div className="absolute top-1/4 right-1/4 w-4 h-4 bg-teal-400 rounded-full animate-bounce delay-300"></div>
-        <div className="absolute bottom-1/3 left-1/4 w-3 h-3 bg-red-400 rounded-full animate-bounce delay-700"></div>
-        <div className="absolute top-3/4 right-1/3 w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-1000"></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="text-center mb-8">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6">
             <span className="shiny-text bg-gradient-to-r from-slate-700 via-teal-600 to-red-500 bg-clip-text">
               Our Services
             </span>
           </h2>
           
-          {/* Decorative line */}
-          <div className="flex items-center justify-center space-x-2">
-            <div className="w-8 h-1 bg-gradient-to-r from-transparent to-teal-500 rounded-full"></div>
-            <div className="w-16 h-1 bg-gradient-to-r from-teal-500 to-red-500 rounded-full"></div>
-            <div className="w-8 h-1 bg-gradient-to-r from-red-500 to-transparent rounded-full"></div>
-          </div>
+        
         </div>
 
         {/* Enhanced Services Grid */}
@@ -177,23 +167,6 @@ const Services = () => {
               <div className="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-white/30 rounded-bl-lg opacity-50 group-hover:opacity-100 transition-opacity duration-300"></div>
             </div>
           ))}
-        </div>
-
-        {/* Call to Action */}
-        <div className="text-center mt-16">
-          <div className="bg-white/30 backdrop-blur-lg rounded-2xl p-8 border border-white/40 max-w-2xl mx-auto">
-            <h3 className="text-2xl md:text-3xl font-bold mb-4">
-              <span className="shiny-text bg-gradient-to-r from-slate-700 to-teal-600 bg-clip-text text-transparent">
-                Ready to Start Your Project?
-              </span>
-            </h3>
-            <p className="text-slate-600 mb-6 text-lg">
-              Let's discuss how we can bring your vision to life with our expertise and innovative solutions.
-            </p>
-            <button className="bg-gradient-to-r from-teal-600 to-red-500 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-teal-700 hover:to-red-600 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
-              <span className="shiny-text">Get Free Consultation</span>
-            </button>
-          </div>
         </div>
       </div>
     </section>
