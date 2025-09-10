@@ -2,10 +2,10 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { AppProvider } from './context/AppContext';
-
-// Import critical components immediately (above-the-fold)
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
+import Lottie from 'lottie-react';
+import spinnerAnimation from './assets/animations/spinner.json';
 
 // Lazy load page components for better performance
 const Home = lazy(() => import('./pages/Home'));
@@ -15,13 +15,23 @@ const Portfolio = lazy(() => import('./pages/Portfolio'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Admin = lazy(() => import('./pages/Admin'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const SoftwareDevelopment = lazy(() => import('./pages/SoftwareDevelopment'));
+const DigitalMarketing = lazy(() => import('./pages/DigitalMarketing'));
+const VideoEditing = lazy(() => import('./pages/VideoEditing'));
 
-// Loading fallback components
+// Loading fallback components with Lottie animation
 const PageLoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-teal-50">
     <div className="text-center">
-      <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-teal-500 border-t-transparent"></div>
-      <p className="mt-4 text-slate-600 font-medium">Loading...</p>
+      <div className="w-24 h-24 mx-auto mb-4">
+        <Lottie 
+          animationData={spinnerAnimation} 
+          loop={true} 
+          autoplay={true}
+          style={{ width: '100%', height: '100%' }}
+        />
+      </div>
+      <p className="text-slate-600 font-medium">Loading...</p>
     </div>
   </div>
 );
@@ -29,8 +39,15 @@ const PageLoadingSpinner = () => (
 const SectionLoadingFallback = () => (
   <div className="min-h-[400px] flex items-center justify-center">
     <div className="text-center">
-      <div className="inline-block animate-spin rounded-full h-8 w-8 border-3 border-teal-500 border-t-transparent"></div>
-      <p className="mt-2 text-slate-500 text-sm">Loading content...</p>
+      <div className="w-16 h-16 mx-auto mb-2">
+        <Lottie 
+          animationData={spinnerAnimation} 
+          loop={true} 
+          autoplay={true}
+          style={{ width: '100%', height: '100%' }}
+        />
+      </div>
+      <p className="text-slate-500 text-sm">Loading content...</p>
     </div>
   </div>
 );
@@ -95,6 +112,32 @@ const App = () => {
                     element={
                       <Suspense fallback={<PageLoadingSpinner />}>
                         <Contact />
+                      </Suspense>
+                    } 
+                  />
+
+                  {/* Individual Service Routes */}
+                  <Route 
+                    path="/services/software-development" 
+                    element={
+                      <Suspense fallback={<PageLoadingSpinner />}>
+                        <SoftwareDevelopment />
+                      </Suspense>
+                    } 
+                  />
+                  <Route 
+                    path="/services/digital-marketing" 
+                    element={
+                      <Suspense fallback={<PageLoadingSpinner />}>
+                        <DigitalMarketing />
+                      </Suspense>
+                    } 
+                  />
+                  <Route 
+                    path="/services/video-editing" 
+                    element={
+                      <Suspense fallback={<PageLoadingSpinner />}>
+                        <VideoEditing />
                       </Suspense>
                     } 
                   />
