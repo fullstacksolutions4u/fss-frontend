@@ -4,11 +4,13 @@ import logo from '../../assets/logo_transparent.png';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [servicesDropdown, setServicesDropdown] = useState(false);
   const [mentoringDropdown, setMentoringDropdown] = useState(false);
   const [userDropdown, setUserDropdown] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // This would come from your auth context
-  const [user, setUser] = useState({ name: 'John Doe', avatar: null }); // This would come from your auth context
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState({ name: 'John Doe', avatar: null });
   
+  const servicesRef = useRef(null);
   const mentoringRef = useRef(null);
   const userRef = useRef(null);
 
@@ -23,6 +25,9 @@ const Navbar = () => {
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
+      if (servicesRef.current && !servicesRef.current.contains(event.target)) {
+        setServicesDropdown(false);
+      }
       if (mentoringRef.current && !mentoringRef.current.contains(event.target)) {
         setMentoringDropdown(false);
       }
@@ -37,9 +42,31 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Home', href: '#home' },
-    { name: 'Services', href: '#services' },
-    { name: 'Portfolio', href: '#portfolio' },
     { name: 'Contact', href: '#contact' }
+  ];
+
+  const services = [
+    {
+      name: 'Software Development',
+      description: 'Custom software solutions, web applications, and mobile apps built with modern technologies',
+      icon: '💻',
+      url: '/services/software-development',
+      color: 'from-blue-500 to-cyan-500'
+    },
+    {
+      name: 'Digital Marketing',
+      description: 'SEO, social media marketing, and digital advertising strategies to grow your business',
+      icon: '📈',
+      url: '/services/digital-marketing',
+      color: 'from-orange-500 to-red-500'
+    },
+    {
+      name: 'Video Editing',
+      description: 'Professional video editing and post-production services for all platforms',
+      icon: '🎬',
+      url: '/services/video-editing',
+      color: 'from-green-500 to-emerald-500'
+    }
   ];
 
   const mentoringLinks = [
@@ -60,24 +87,29 @@ const Navbar = () => {
       element.scrollIntoView({ behavior: 'smooth' });
     }
     setIsOpen(false);
+    setServicesDropdown(false);
     setMentoringDropdown(false);
   };
 
+  const handleServiceClick = (url) => {
+    // Navigate to service page
+    window.location.href = url;
+    setServicesDropdown(false);
+    setIsOpen(false);
+  };
+
   const handleLogin = () => {
-    // This would trigger your login modal/redirect
     console.log('Login clicked');
-    setIsLoggedIn(true); // Temporary for demo
+    setIsLoggedIn(true);
   };
 
   const handleLogout = () => {
-    // This would handle logout logic
     console.log('Logout clicked');
     setIsLoggedIn(false);
     setUserDropdown(false);
   };
 
   const handleDashboard = () => {
-    // This would navigate to dashboard
     console.log('Dashboard clicked');
     setUserDropdown(false);
   };
@@ -103,7 +135,7 @@ const Navbar = () => {
                 />
                 <div className="absolute -inset-1 bg-gradient-to-r from-red-500 to-teal-600 rounded-lg opacity-0 group-hover:opacity-20 blur transition-all duration-300"></div>
               </div>
-              <span className="text-xl font-heading font-bold bg-gradient-to-r from-teal-600 via-slate-900 to-red-500 bg-clip-text text-transparent hidden sm:block">
+              <span className="text-lg sm:text-xl font-heading font-bold text-green-800 hidden sm:block">
                 Full Stack Solutions
               </span>
             </a>
@@ -123,6 +155,72 @@ const Navbar = () => {
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-red-500 to-teal-600 group-hover:w-full transition-all duration-300"></span>
                 </a>
               ))}
+              
+              {/* Services Dropdown */}
+              <div className="relative" ref={servicesRef}>
+                <button
+                  onClick={() => setServicesDropdown(!servicesDropdown)}
+                  className="group relative px-4 py-2 rounded-lg text-slate-700 hover:text-teal-600 font-medium transition-all duration-300 hover:bg-gray-50 flex items-center space-x-1"
+                >
+                  <span>Services</span>
+                  <svg
+                    className={`w-4 h-4 transition-transform duration-200 ${
+                      servicesDropdown ? 'rotate-180' : ''
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-red-500 to-teal-600 group-hover:w-full transition-all duration-300"></span>
+                </button>
+
+                {/* Services Dropdown Menu */}
+                <div
+                  className={`absolute top-full mt-2 w-80 lg:w-96 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 ${
+                    servicesDropdown 
+                      ? 'opacity-100 visible translate-y-0' 
+                      : 'opacity-0 invisible -translate-y-2'
+                  }`}
+                  style={{ 
+                    left: '50%', 
+                    transform: servicesDropdown ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(-8px)'
+                  }}
+                >
+                  <div className="p-4">
+                    <div className="grid grid-cols-1 gap-3">
+                      {services.map((service, index) => (
+                        <button
+                          key={service.name}
+                          onClick={() => handleServiceClick(service.url)}
+                          className="group p-4 rounded-lg border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-300 text-left bg-white hover:bg-gray-50"
+                        >
+                          <div className="flex items-start space-x-3">
+                            <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${service.color} flex items-center justify-center text-white text-lg flex-shrink-0`}>
+                              {service.icon}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-slate-800 group-hover:text-teal-600 transition-colors duration-200 text-sm">
+                                {service.name}
+                              </h4>
+                              <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+                                {service.description}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="mt-3 flex items-center text-xs text-teal-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            Learn more
+                            <svg className="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
               
               {/* Mentoring Dropdown */}
               <div className="relative" ref={mentoringRef}>
@@ -146,10 +244,10 @@ const Navbar = () => {
 
                 {/* Mentoring Dropdown Menu */}
                 <div
-                  className={`absolute top-full left-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 ${
+                  className={`absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 ${
                     mentoringDropdown 
-                      ? 'opacity-100 visible transform translate-y-0' 
-                      : 'opacity-0 invisible transform -translate-y-2'
+                      ? 'opacity-100 visible translate-y-0' 
+                      : 'opacity-0 invisible -translate-y-2'
                   }`}
                 >
                   <div className="p-2">
@@ -160,13 +258,9 @@ const Navbar = () => {
                         onClick={(e) => handleSmoothScroll(e, link.href)}
                         className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-200 group"
                       >
-                        <div className="text-2xl">{link.icon}</div>
                         <div className="flex-1">
                           <div className="font-semibold text-slate-800 group-hover:text-teal-600 transition-colors duration-200">
                             {link.name}
-                          </div>
-                          <div className="text-sm text-slate-500 mt-1">
-                            {link.description}
                           </div>
                         </div>
                         <svg className="w-4 h-4 text-slate-400 group-hover:text-teal-500 transform group-hover:translate-x-1 transition-all duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -293,7 +387,7 @@ const Navbar = () => {
       {/* Mobile Menu */}
       <div
         className={`md:hidden transition-all duration-300 overflow-hidden bg-white border-t border-gray-100 ${
-          isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          isOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
         <div className="px-4 pt-4 pb-6 space-y-2">
@@ -308,6 +402,26 @@ const Navbar = () => {
             </a>
           ))}
           
+          {/* Mobile Services Section */}
+          <div className="border-t border-gray-100 pt-4 mt-4">
+            <div className="text-sm font-semibold text-slate-500 uppercase tracking-wider px-4 mb-2">
+              Services
+            </div>
+            {services.map((service) => (
+              <button
+                key={service.name}
+                onClick={() => handleServiceClick(service.url)}
+                className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-700 hover:text-teal-600 hover:bg-gray-50 transition-all duration-300 text-left"
+              >
+                <span className="text-lg">{service.icon}</span>
+                <div>
+                  <div className="font-medium">{service.name}</div>
+                  <div className="text-xs text-slate-500">{service.description}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+          
           {/* Mobile Mentoring Section */}
           <div className="border-t border-gray-100 pt-4 mt-4">
             <div className="text-sm font-semibold text-slate-500 uppercase tracking-wider px-4 mb-2">
@@ -320,7 +434,6 @@ const Navbar = () => {
                 onClick={(e) => handleSmoothScroll(e, link.href)}
                 className="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-700 hover:text-teal-600 hover:bg-gray-50 transition-all duration-300"
               >
-                <span className="text-lg">{link.icon}</span>
                 <span className="font-medium">{link.name}</span>
               </a>
             ))}
