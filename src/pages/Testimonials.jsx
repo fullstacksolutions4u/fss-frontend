@@ -7,24 +7,15 @@ const Testimonials = () => {
 
   const testimonials = [
     {
-      id: 1,
-      name: "Sarah Chen",
-      company: "TechStart Solutions",
-      image: "https://images.unsplash.com/photo-1494790108755-2616b612b302?w=80&h=80&fit=crop&crop=face",
-      testimonial: "Working with Full Stack Solutions was a game-changer for our startup. The results exceeded all expectations.",
-    },
-    {
       id: 2,
       name: "Michael Rodriguez",
       company: "Creative Minds Agency",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face",
       testimonial: "The portfolio website they created is absolutely stunning. Our client inquiries increased by 200%.",
     },
     {
       id: 3,
       name: "Emma Thompson",
       company: "Bella Vista Restaurant",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face",
       testimonial: "Our booking system has transformed how we manage reservations. Professional and delivered on time.",
     }
   ];
@@ -62,6 +53,15 @@ const Testimonials = () => {
     })
   };
 
+  // Helper: get initials
+  const getInitials = (name) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase();
+  };
+
   return (
     <section className="py-12 bg-slate-50">
       <div className="max-w-4xl mx-auto px-4">
@@ -89,11 +89,12 @@ const Testimonials = () => {
             >
               <div className="bg-white rounded-xl p-6 shadow-sm border h-full flex items-center">
                 <div className="flex items-start space-x-4 w-full">
-                  <img
-                    src={testimonials[currentIndex].image}
-                    alt={testimonials[currentIndex].name}
-                    className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-                  />
+                  
+                  {/* Avatar (CSS initials) */}
+                  <div className="w-12 h-12 rounded-full bg-teal-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                    {getInitials(testimonials[currentIndex].name)}
+                  </div>
+                  
                   <div className="flex-1">
                     <blockquote className="text-slate-700 mb-3 text-sm leading-relaxed">
                       "{testimonials[currentIndex].testimonial}"
