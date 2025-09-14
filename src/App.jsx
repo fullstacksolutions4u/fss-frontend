@@ -4,7 +4,7 @@ import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import Navbar from "./components/common/Navbar"
 
-// Token management utilities
+
 const TokenManager = {
   getToken: () => localStorage.getItem('authToken'),
   getUser: () => {
@@ -32,7 +32,7 @@ const TokenManager = {
   }
 };
 
-// Route configuration
+
 const routes = {
   '/': {
     component: Home,
@@ -48,7 +48,6 @@ const routes = {
   }
 };
 
-// Route handler component
 // Route handler component
 const RouteHandler = ({ 
   currentPath, 
