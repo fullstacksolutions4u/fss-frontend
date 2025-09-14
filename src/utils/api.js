@@ -1,10 +1,7 @@
-// utils/api.js - API utility functions for the frontend
-
 const API_BASE_URL = import.meta.env?.VITE_API_URL || 
-                     (typeof process !== 'undefined' && process.env?.REACT_APP_API_URL) || 
+                     (typeof process !== 'undefined' && process.env?.VITE_API_URL) || 
                      'http://localhost:5000/api';
 
-// Generic API call function with error handling
 const apiCall = async (endpoint, options = {}) => {
   try {
     const url = `${API_BASE_URL}${endpoint}`;
@@ -30,9 +27,7 @@ const apiCall = async (endpoint, options = {}) => {
   }
 };
 
-// Enquiry API functions
 export const enquiryAPI = {
-  // Submit new enquiry
   submit: async (enquiryData) => {
     return apiCall('/enquiries', {
       method: 'POST',
@@ -40,7 +35,6 @@ export const enquiryAPI = {
     });
   },
 
-  // Get all enquiries (for admin)
   getAll: async (filters = {}) => {
     const queryParams = new URLSearchParams();
     
@@ -55,7 +49,6 @@ export const enquiryAPI = {
     return apiCall(endpoint);
   },
 
-  // Update enquiry status (for admin)
   updateStatus: async (enquiryId, status) => {
     return apiCall(`/enquiries/${enquiryId}/status`, {
       method: 'PATCH',
@@ -63,7 +56,6 @@ export const enquiryAPI = {
     });
   },
 
-  // Delete enquiry (for admin)
   delete: async (enquiryId) => {
     return apiCall(`/enquiries/${enquiryId}`, {
       method: 'DELETE',
@@ -71,12 +63,10 @@ export const enquiryAPI = {
   },
 };
 
-// Health check function
 export const healthCheck = async () => {
   return apiCall('/health');
 };
 
-// Error handling helper
 export const handleApiError = (error) => {
   console.error('API Error:', error);
   
@@ -91,18 +81,15 @@ export const handleApiError = (error) => {
   return error.message || 'Something went wrong. Please try again.';
 };
 
-// Form validation helpers
 export const validateEnquiryForm = (formData) => {
   const errors = {};
   
-  // Name validation
   if (!formData.name?.trim()) {
     errors.name = 'Name is required';
   } else if (formData.name.trim().length < 2) {
     errors.name = 'Name must be at least 2 characters';
   }
 
-  // Email validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!formData.email?.trim()) {
     errors.email = 'Email is required';
@@ -110,7 +97,6 @@ export const validateEnquiryForm = (formData) => {
     errors.email = 'Please enter a valid email address';
   }
 
-  // Phone validation
   const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
   if (!formData.phone?.trim()) {
     errors.phone = 'Phone number is required';
@@ -118,12 +104,10 @@ export const validateEnquiryForm = (formData) => {
     errors.phone = 'Please enter a valid phone number';
   }
 
-  // Service validation
   if (!formData.service) {
     errors.service = 'Please select a service';
   }
 
-  // Message validation
   if (!formData.message?.trim()) {
     errors.message = 'Message is required';
   } else if (formData.message.trim().length < 10) {
@@ -136,7 +120,6 @@ export const validateEnquiryForm = (formData) => {
   };
 };
 
-// Local storage helpers for caching (optional)
 export const storage = {
   get: (key) => {
     try {

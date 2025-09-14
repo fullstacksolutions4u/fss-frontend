@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-// Create axios instance
 const API_BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:5000/api';
 
 const apiClient = axios.create({
@@ -11,7 +10,6 @@ const apiClient = axios.create({
   },
 });
 
-// Token management utilities
 const TokenManager = {
   getToken: () => localStorage.getItem('authToken'),
   getRefreshToken: () => localStorage.getItem('refreshToken'),
@@ -34,17 +32,14 @@ const TokenManager = {
   }
 };
 
-// Request interceptor - Add auth token to requests
 apiClient.interceptors.request.use(
   (config) => {
     const token = TokenManager.getToken();
     
-    // Add token to requests if available and not login/setup endpoints
     if (token && !config.url.includes('/auth/login') && !config.url.includes('/auth/setup')) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // Log request for debugging
     console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`);
     
     return config;
@@ -55,31 +50,22 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor - Handle responses and token refresh
 apiClient.interceptors.response.use(
   (response) => {
-    // Log successful responses
     console.log(`✅ API Response: ${response.status} ${response.config.url}`);
     
-    // Return consistent response format
-    return {
-      success: true,
-      data: response.data,
-      status: response.status
-    };
+    return response.data;
   },
   async (error) => {
     const originalRequest = error.config;
     
     console.error(`❌ API Error: ${error.response?.status} ${originalRequest?.url}`, error.response?.data);
     
-    // Handle 401 Unauthorized
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       
       const refreshToken = TokenManager.getRefreshToken();
       
-      // Try to refresh token
       if (refreshToken && !TokenManager.isTokenExpired(refreshToken)) {
         try {
           const refreshResponse = await axios.post(`${API_BASE_URL}/auth/refresh`, {
@@ -89,7 +75,6 @@ apiClient.interceptors.response.use(
           if (refreshResponse.data.accessToken) {
             TokenManager.setToken(refreshResponse.data.accessToken);
             
-            // Retry original request with new token
             originalRequest.headers.Authorization = `Bearer ${refreshResponse.data.accessToken}`;
             return apiClient(originalRequest);
           }
@@ -97,13 +82,11 @@ apiClient.interceptors.response.use(
           console.error('Token refresh failed:', refreshError);
           TokenManager.removeTokens();
           
-          // Redirect to login
           if (typeof window !== 'undefined') {
             window.location.href = '/admin/login';
           }
         }
       } else {
-        // No refresh token or expired, redirect to login
         TokenManager.removeTokens();
         if (typeof window !== 'undefined') {
           window.location.href = '/admin/login';
@@ -111,7 +94,6 @@ apiClient.interceptors.response.use(
       }
     }
     
-    // Format error response
     const errorResponse = {
       type: 'API_ERROR',
       status: error.response?.status || 500,
@@ -119,7 +101,6 @@ apiClient.interceptors.response.use(
       data: error.response?.data
     };
     
-    // Handle validation errors
     if (error.response?.status === 400 && error.response?.data?.errors) {
       const validationErrors = {};
       error.response.data.errors.forEach(err => {
@@ -130,7 +111,6 @@ apiClient.interceptors.response.use(
       errorResponse.validationErrors = validationErrors;
     }
     
-    // Handle network errors
     if (!error.response) {
       errorResponse.type = 'NETWORK_ERROR';
       errorResponse.message = 'Network error occurred. Please check your connection.';
@@ -140,7 +120,6 @@ apiClient.interceptors.response.use(
   }
 );
 
-// API endpoint functions
 export const enquiryAPI = {
   create: async (enquiryData) => {
     return apiClient.post('/enquiries', enquiryData);
@@ -177,14 +156,13 @@ export const authAPI = {
   login: async (email, password) => {
     const response = await apiClient.post('/auth/login', { email, password });
     
-    // Store tokens after successful login
-    if (response.data.accessToken) {
+    if (response.data?.accessToken) {
       TokenManager.setToken(response.data.accessToken);
     }
-    if (response.data.refreshToken) {
+    if (response.data?.refreshToken) {
       TokenManager.setRefreshToken(response.data.refreshToken);
     }
-    if (response.data.admin) {
+    if (response.data?.admin) {
       localStorage.setItem('user', JSON.stringify(response.data.admin));
     }
     
@@ -195,7 +173,6 @@ export const authAPI = {
     try {
       await apiClient.post('/auth/logout');
     } finally {
-      // Always clear tokens regardless of API response
       TokenManager.removeTokens();
     }
   },
@@ -212,7 +189,7 @@ export const authAPI = {
     
     const response = await apiClient.post('/auth/refresh', { refreshToken });
     
-    if (response.data.accessToken) {
+    if (response.data?.accessToken) {
       TokenManager.setToken(response.data.accessToken);
     }
     
@@ -274,10 +251,8 @@ export const systemAPI = {
   },
 };
 
-// Export token manager for external use
 export { TokenManager };
 
-// Default export
 const api = {
   enquiry: enquiryAPI,
   auth: authAPI,

@@ -1,33 +1,79 @@
 import React, { useState, useEffect } from 'react';
-import { enquiryAPI, authAPI } from '../services/api';
-import EditEnquiryModal from '../components/dashboard/EditEnquiryModal';
+import { enquiryAPI } from '../services/api';
+
+const Toast = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+  const icon = type === 'success' ? '✓' : '✕';
+
+  return (
+    <div className={`fixed top-4 right-4 z-50 ${bgColor} text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 animate-in slide-in-from-top-2`}>
+      <span className="font-medium">{icon}</span>
+      <span className="text-sm">{message}</span>
+      <button onClick={onClose} className="ml-2 text-white hover:text-gray-200">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  );
+};
+
+const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, enquiryName }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      
+      <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200">
+        <div className="flex items-center mb-4">
+          <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+            <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        </div>
+        
+        <p className="text-gray-600 mb-6">{message}</p>
+        
+        <div className="flex space-x-3">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const AdminDashboard = ({ user: propUser, onLogout }) => {
-  // State management
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(propUser || null);
   const [authToken, setAuthToken] = useState(localStorage.getItem('authToken') || null);
-  
-  // Enquiries data
   const [enquiries, setEnquiries] = useState([]);
-  
-  // Filters and pagination
-  const [enquiryFilters, setEnquiryFilters] = useState({
-    status: '',
-    service: '',
-    priority: '',
-    page: 1,
-    limit: 20,
-    search: ''
-  });
-  
-  const [totalEnquiries, setTotalEnquiries] = useState(0);
-  const [selectedEnquiry, setSelectedEnquiry] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingEnquiry, setEditingEnquiry] = useState(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [toast, setToast] = useState(null);
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, enquiry: null });
 
-  // Check if user is authenticated and load data
   useEffect(() => {
     if (!authToken) {
       setIsLoading(false);
@@ -37,12 +83,27 @@ const AdminDashboard = ({ user: propUser, onLogout }) => {
     loadEnquiries();
   }, [authToken]);
 
-  // Load enquiries when filters change
   useEffect(() => {
     if (authToken) {
       loadEnquiries();
     }
-  }, [enquiryFilters, authToken]);
+  }, [currentPage, authToken]);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+  };
+
+  const hideToast = () => {
+    setToast(null);
+  };
+
+  const openConfirmModal = (enquiry) => {
+    setConfirmModal({ isOpen: true, enquiry });
+  };
+
+  const closeConfirmModal = () => {
+    setConfirmModal({ isOpen: false, enquiry: null });
+  };
 
   const loadUserProfile = async () => {
     try {
@@ -50,7 +111,7 @@ const AdminDashboard = ({ user: propUser, onLogout }) => {
       setUser({
         id: userData.id || 1,
         name: userData.name || 'Admin User',
-        email: userData.email || 'admin@fullstacksolutions.com',
+        email: userData.email || 'tony@fullstacksolutions.in',
         role: userData.role || 'Super Admin'
       });
     } catch (error) {
@@ -64,12 +125,15 @@ const AdminDashboard = ({ user: propUser, onLogout }) => {
     try {
       setIsLoading(true);
       
-      // Call your real API endpoint
-      const response = await enquiryAPI.getAll(enquiryFilters);
+      const queryParams = {
+        page: currentPage,
+        limit: itemsPerPage
+      };
+      
+      const response = await enquiryAPI.getAll(queryParams);
       
       if (response.success) {
         setEnquiries(response.data.enquiries || response.data || []);
-        setTotalEnquiries(response.data.total || response.data.length || 0);
       }
       
     } catch (error) {
@@ -79,11 +143,28 @@ const AdminDashboard = ({ user: propUser, onLogout }) => {
         handleAuthError();
       }
       
-      // Reset to empty array on error
       setEnquiries([]);
-      setTotalEnquiries(0);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDeleteEnquiry = async () => {
+    const { enquiry } = confirmModal;
+    
+    try {
+      const response = await enquiryAPI.delete(enquiry.id || enquiry._id);
+      
+      if (response.success) {
+        setEnquiries(prev => prev.filter(e => (e.id || e._id) !== (enquiry.id || enquiry._id)));
+        showToast(`Enquiry from ${enquiry.name} has been deleted successfully`, 'success');
+      }
+      
+    } catch (error) {
+      console.error('Error deleting enquiry:', error);
+      showToast('Failed to delete enquiry. Please try again.', 'error');
+    } finally {
+      closeConfirmModal();
     }
   };
 
@@ -94,31 +175,6 @@ const AdminDashboard = ({ user: propUser, onLogout }) => {
     setAuthToken(null);
     if (onLogout) {
       onLogout();
-    }
-  };
-
-  const handleStatusUpdate = async (enquiryId, newStatus) => {
-    if (!authToken) return;
-    
-    try {
-      const response = await enquiryAPI.updateStatus(enquiryId, newStatus, 'Status updated from dashboard');
-      
-      if (response.success) {
-        // Update local state
-        setEnquiries(prev => prev.map(enquiry => 
-          enquiry.id === enquiryId ? { ...enquiry, status: newStatus } : enquiry
-        ));
-        
-        if (selectedEnquiry?.id === enquiryId) {
-          setSelectedEnquiry({ ...selectedEnquiry, status: newStatus });
-        }
-        
-        console.log(`Status updated to ${newStatus} for enquiry ${enquiryId}`);
-      }
-      
-    } catch (error) {
-      console.error('Error updating status:', error);
-      alert('Error updating enquiry status');
     }
   };
 
@@ -136,252 +192,33 @@ const AdminDashboard = ({ user: propUser, onLogout }) => {
     console.log('Logged out successfully');
   };
 
-  const handleEditEnquiry = (enquiry) => {
-    setEditingEnquiry(enquiry);
-    setIsEditModalOpen(true);
+  const truncateText = (text, maxLength = 50) => {
+    if (!text) return 'N/A';
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   };
 
-  const handleUpdateEnquiry = async (updatedEnquiry) => {
-    try {
-      // In a real app, you'd call an API to update the enquiry
-      // For now, we'll just update local state
-      setEnquiries(prev => prev.map(enquiry => 
-        enquiry.id === updatedEnquiry.id ? updatedEnquiry : enquiry
-      ));
-      
-      if (selectedEnquiry?.id === updatedEnquiry.id) {
-        setSelectedEnquiry(updatedEnquiry);
-      }
-      
-      setIsEditModalOpen(false);
-      setEditingEnquiry(null);
-      console.log('Enquiry updated:', updatedEnquiry);
-      
-    } catch (error) {
-      console.error('Error updating enquiry:', error);
-      alert('Error updating enquiry');
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  const totalPages = Math.ceil(enquiries.length / itemsPerPage);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
     }
   };
 
-  const handleDeleteEnquiry = async (enquiryId) => {
-    if (!window.confirm('Are you sure you want to delete this enquiry?')) {
-      return;
-    }
-    
-    try {
-      const response = await enquiryAPI.delete(enquiryId);
-      
-      if (response.success) {
-        setEnquiries(prev => prev.filter(enquiry => enquiry.id !== enquiryId));
-        setTotalEnquiries(prev => prev - 1);
-        console.log('Enquiry deleted:', enquiryId);
-      }
-      
-    } catch (error) {
-      console.error('Error deleting enquiry:', error);
-      alert('Error deleting enquiry');
-    }
-  };
-
-  const handleAddNote = async (enquiryId, note) => {
-    try {
-      const response = await enquiryAPI.addNote(enquiryId, note, false);
-      
-      if (response.success) {
-        // Reload enquiries to get updated data
-        loadEnquiries();
-        console.log('Note added to enquiry:', enquiryId);
-      }
-      
-    } catch (error) {
-      console.error('Error adding note:', error);
-      alert('Error adding note');
-    }
-  };
-
-  const exportData = async (format = 'csv') => {
-    try {
-      console.log(`Exporting ${totalEnquiries} enquiries in ${format} format...`);
-      
-      // You can implement real export functionality here
-      const dataStr = format === 'json' 
-        ? JSON.stringify(enquiries, null, 2)
-        : enquiries.map(e => `${e.name},${e.email},${e.service},${e.status}`).join('\n');
-        
-      const dataBlob = new Blob([dataStr], { type: format === 'json' ? 'application/json' : 'text/csv' });
-      const url = URL.createObjectURL(dataBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `enquiries.${format}`;
-      link.click();
-      
-    } catch (error) {
-      console.error('Error exporting data:', error);
-      alert('Error exporting data');
-    }
-  };
-
-  // If not authenticated, redirect to login
   if (!authToken) {
     if (onLogout) {
       onLogout();
     }
     return null;
   }
-
-  const EnquiryCard = ({ enquiry }) => (
-    <div className="bg-white p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h3 className="font-medium text-gray-900">{enquiry.name}</h3>
-          <p className="text-sm text-gray-600 mt-1">{enquiry.email}</p>
-          <p className="text-sm text-gray-500 mt-1">{enquiry.service}</p>
-          <p className="text-sm text-gray-700 mt-2 line-clamp-3">{enquiry.message}</p>
-          <p className="text-xs text-gray-400 mt-2">
-            {new Date(enquiry.createdAt).toLocaleDateString()}
-          </p>
-        </div>
-        <div className="flex flex-col items-end space-y-2 ml-4">
-          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-            enquiry.status === 'new' ? 'bg-blue-100 text-blue-800' :
-            enquiry.status === 'in-progress' ? 'bg-yellow-100 text-yellow-800' :
-            enquiry.status === 'completed' ? 'bg-green-100 text-green-800' :
-            'bg-gray-100 text-gray-800'
-          }`}>
-            {enquiry.status}
-          </span>
-          {enquiry.priority && (
-            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-              enquiry.priority === 'high' ? 'bg-red-100 text-red-800' :
-              enquiry.priority === 'medium' ? 'bg-orange-100 text-orange-800' :
-              'bg-gray-100 text-gray-800'
-            }`}>
-              {enquiry.priority}
-            </span>
-          )}
-          <div className="flex space-x-1 mt-2">
-            <button
-              onClick={() => { setSelectedEnquiry(enquiry); setIsModalOpen(true); }}
-              className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
-              title="View Details"
-            >
-              View
-            </button>
-            <button
-              onClick={() => handleEditEnquiry(enquiry)}
-              className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
-              title="Edit"
-            >
-              Edit
-            </button>
-            <button
-              onClick={() => handleDeleteEnquiry(enquiry.id)}
-              className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
-              title="Delete"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const EnquiryModal = () => {
-    if (!selectedEnquiry) return null;
-
-    return (
-      <div className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 ${
-        isModalOpen ? 'block' : 'hidden'
-      }`}>
-        <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">Enquiry Details</h2>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          
-          <div className="p-6 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Name</label>
-                <p className="mt-1 text-sm text-gray-900">{selectedEnquiry.name}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Email</label>
-                <p className="mt-1 text-sm text-gray-900">{selectedEnquiry.email}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Phone</label>
-                <p className="mt-1 text-sm text-gray-900">{selectedEnquiry.phone || 'N/A'}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Service</label>
-                <p className="mt-1 text-sm text-gray-900">{selectedEnquiry.service}</p>
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Subject</label>
-              <p className="mt-1 text-sm text-gray-900 bg-gray-50 p-3 rounded-lg">
-                {selectedEnquiry.subject || 'No subject'}
-              </p>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Message</label>
-              <p className="mt-1 text-sm text-gray-900 bg-gray-50 p-3 rounded-lg">
-                {selectedEnquiry.message}
-              </p>
-            </div>
-            
-            <div className="flex space-x-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Status</label>
-                <select
-                  value={selectedEnquiry.status}
-                  onChange={(e) => handleStatusUpdate(selectedEnquiry.id, e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 text-sm"
-                >
-                  <option value="new">New</option>
-                  <option value="in-progress">In Progress</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Priority</label>
-                <p className="mt-1 text-sm text-gray-900 capitalize">{selectedEnquiry.priority || 'Low'}</p>
-              </div>
-            </div>
-            
-            <div className="flex space-x-2 pt-4">
-              <button 
-                onClick={() => handleEditEnquiry(selectedEnquiry)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
-              >
-                Edit Enquiry
-              </button>
-              <button 
-                onClick={() => handleDeleteEnquiry(selectedEnquiry.id)}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
-              >
-                Delete Enquiry
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   if (isLoading) {
     return (
@@ -399,7 +236,23 @@ const AdminDashboard = ({ user: propUser, onLogout }) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={hideToast} 
+        />
+      )}
+
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirmModal}
+        onConfirm={handleDeleteEnquiry}
+        title="Delete Enquiry"
+        message={`Are you sure you want to delete the enquiry from ${confirmModal.enquiry?.name}? This action cannot be undone.`}
+        enquiryName={confirmModal.enquiry?.name}
+      />
+
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -429,119 +282,147 @@ const AdminDashboard = ({ user: propUser, onLogout }) => {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">
-          {/* Filters */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
-                <input
-                  type="text"
-                  placeholder="Search enquiries..."
-                  value={enquiryFilters.search}
-                  onChange={(e) => setEnquiryFilters({...enquiryFilters, search: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                <select
-                  value={enquiryFilters.status}
-                  onChange={(e) => setEnquiryFilters({...enquiryFilters, status: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">All Status</option>
-                  <option value="new">New</option>
-                  <option value="in-progress">In Progress</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Service</label>
-                <select
-                  value={enquiryFilters.service}
-                  onChange={(e) => setEnquiryFilters({...enquiryFilters, service: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">All Services</option>
-                  <option value="Software Development">Software Development</option>
-                  <option value="Digital Marketing">Digital Marketing</option>
-                  <option value="Video Editing">Video Editing</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
-                <select
-                  value={enquiryFilters.priority}
-                  onChange={(e) => setEnquiryFilters({...enquiryFilters, priority: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">All Priorities</option>
-                  <option value="high">High</option>
-                  <option value="medium">Medium</option>
-                  <option value="low">Low</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Enquiries List */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium text-gray-900">
-                  Enquiries ({totalEnquiries})
-                </h3>
-                <div className="flex space-x-2">
-                  <button 
-                    onClick={() => exportData('csv')}
-                    className="px-4 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700"
-                  >
-                    Export CSV
-                  </button>
-                  <button 
-                    onClick={() => exportData('json')}
-                    className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                  >
-                    Export JSON
-                  </button>
+              <h3 className="text-lg font-medium text-gray-900">
+                Enquiries
+              </h3>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Phone
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Service
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Message
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {enquiries.length > 0 ? (
+                    enquiries.map((enquiry) => (
+                      <tr key={enquiry.id || enquiry._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {formatDate(enquiry.createdAt)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">
+                            {enquiry.name}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {enquiry.email}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {enquiry.phone || 'N/A'}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {enquiry.service}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-900 max-w-xs">
+                            {truncateText(enquiry.message, 100)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <button
+                            onClick={() => openConfirmModal(enquiry)}
+                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                            title="Delete enquiry"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="7" className="px-6 py-12 text-center">
+                        <div className="flex flex-col items-center">
+                          <svg className="h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                          </svg>
+                          <p className="text-gray-500">No enquiries found</p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {totalPages > 1 && (
+              <div className="bg-white px-6 py-3 border-t border-gray-200">
+                <div className="flex items-center justify-center">
+                  <div className="flex space-x-1">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Previous
+                    </button>
+                    
+                    {[...Array(Math.min(5, totalPages))].map((_, index) => {
+                      const pageNumber = Math.max(1, currentPage - 2) + index;
+                      if (pageNumber <= totalPages) {
+                        return (
+                          <button
+                            key={pageNumber}
+                            onClick={() => handlePageChange(pageNumber)}
+                            className={`px-3 py-2 text-sm font-medium rounded-md ${
+                              currentPage === pageNumber
+                                ? 'bg-blue-600 text-white'
+                                : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
+                            }`}
+                          >
+                            {pageNumber}
+                          </button>
+                        );
+                      }
+                      return null;
+                    })}
+                    
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="p-6">
-              {enquiries.length > 0 ? (
-                <div className="space-y-4">
-                  {enquiries.map((enquiry) => (
-                    <EnquiryCard key={enquiry.id} enquiry={enquiry} />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <svg className="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                  </svg>
-                  <p className="text-gray-500">No enquiries found</p>
-                  <p className="text-gray-400 text-sm mt-1">Try adjusting your filters or search terms</p>
-                </div>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </main>
-
-      {/* View Enquiry Modal */}
-      <EnquiryModal />
-      
-      {/* Edit Enquiry Modal */}
-      <EditEnquiryModal
-        enquiry={editingEnquiry}
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        onUpdate={handleUpdateEnquiry}
-      />
     </div>
   );
 };

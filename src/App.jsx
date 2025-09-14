@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import Home from './pages/Home';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
-import Navbar from "./components/common/Navbar"
-
+import Navbar from "./components/common/Navbar";
+import Lottie from "lottie-react";
+import spinner from "./assets/animations/spinner.json";
 
 const TokenManager = {
   getToken: () => localStorage.getItem('authToken'),
@@ -32,7 +33,6 @@ const TokenManager = {
   }
 };
 
-
 const routes = {
   '/': {
     component: Home,
@@ -48,18 +48,9 @@ const routes = {
   }
 };
 
-// Route handler component
-const RouteHandler = ({ 
-  currentPath, 
-  isAuthenticated, 
-  user, 
-  onLoginSuccess, 
-  onLogout 
-}) => {
+const RouteHandler = ({ currentPath, isAuthenticated, user, onLoginSuccess, onLogout }) => {
   const route = routes[currentPath];
-  const isAdminRoute = currentPath.startsWith('/admin');
-  
-  // If route doesn't exist, default to Home
+
   if (!route) {
     return (
       <div>
@@ -68,25 +59,22 @@ const RouteHandler = ({
       </div>
     );
   }
-  
-  // Check if route is protected and user is not authenticated
+
   if (route.protected && !isAuthenticated) {
     window.location.href = '/admin/login';
     return null;
   }
-  
-  // Render the component based on route
+
   const Component = route.component;
-  
+
   if (currentPath === '/admin/login') {
     return <Component onLoginSuccess={onLoginSuccess} />;
   }
-  
+
   if (currentPath === '/admin/dashboard') {
     return <Component user={user} onLogout={onLogout} />;
   }
-  
-  // For public pages, include navbar
+
   return (
     <div>
       <Navbar currentPath={currentPath} />
@@ -95,24 +83,25 @@ const RouteHandler = ({
   );
 };
 
-// Loading spinner component
 const LoadingSpinner = () => (
   <div className="min-h-screen bg-gray-50 flex items-center justify-center">
     <div className="text-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <Lottie
+        animationData={spinner}
+        loop={true}
+        className="w-20 h-20 mx-auto mb-4"
+      />
       <p className="text-gray-600">Loading...</p>
     </div>
   </div>
 );
 
-// Main App component
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
 
-  // Listen to browser navigation
   useEffect(() => {
     const handlePopState = () => {
       setCurrentPath(window.location.pathname);
@@ -121,15 +110,16 @@ const App = () => {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Check authentication status on mount
   useEffect(() => {
     checkAuthStatus();
   }, []);
 
-  const checkAuthStatus = () => {
+  const checkAuthStatus = async () => {
     try {
       const token = TokenManager.getToken();
       const userData = TokenManager.getUser();
+
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
       if (token && !TokenManager.isTokenExpired(token)) {
         setIsAuthenticated(true);
@@ -149,27 +139,22 @@ const App = () => {
     }
   };
 
+  const navigateTo = (path) => {
+    setCurrentPath(path);
+    window.history.pushState({}, '', path);
+  };
+
   const handleLoginSuccess = (loginData) => {
-    if (loginData.accessToken) {
-      localStorage.setItem('authToken', loginData.accessToken);
-    }
-    if (loginData.refreshToken) {
-      localStorage.setItem('refreshToken', loginData.refreshToken);
-    }
-    if (loginData.admin) {
-      localStorage.setItem('user', JSON.stringify(loginData.admin));
-      setUser(loginData.admin);
-    }
-    
     setIsAuthenticated(true);
-    window.location.href = '/admin/dashboard';
+    setUser(loginData.admin);
+    navigateTo('/admin/dashboard');
   };
 
   const handleLogout = () => {
     TokenManager.clearAuth();
     setIsAuthenticated(false);
     setUser(null);
-    window.location.href = '/admin/login';
+    navigateTo('/admin/login');
   };
 
   if (isLoading) {
