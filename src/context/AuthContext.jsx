@@ -1,118 +1,84 @@
-// File: src/context/AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { TokenManager } from '../services/api';
 
-// Create Context
-const AuthContext = createContext();
+const AuthContext = createContext({});
 
-// Auth Provider Component
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
 export const AuthProvider = ({ children }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check for existing auth on mount
+  // Check authentication status on mount
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-          // Validate token with backend
-          const response = await fetch('/api/auth/verify', {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          
-          if (response.ok) {
-            const userData = await response.json();
-            setUser(userData.user);
-          } else {
-            localStorage.removeItem('authToken');
-          }
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        localStorage.removeItem('authToken');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
+    checkAuthStatus();
   }, []);
 
-  // Login function
-  const login = async (email, password) => {
+  const checkAuthStatus = () => {
     try {
-      setIsLoading(true);
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const token = TokenManager.getToken();
+      const userData = localStorage.getItem('user');
 
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('authToken', data.token);
-        setUser(data.user);
-        return true;
+      if (token && !TokenManager.isTokenExpired(token)) {
+        setIsAuthenticated(true);
+        if (userData) {
+          setUser(JSON.parse(userData));
+        }
       } else {
-        const errorData = await response.json();
-        console.error('Login failed:', errorData.message);
-        return false;
+        // Token expired or doesn't exist
+        logout();
       }
     } catch (error) {
-      console.error('Login error:', error);
-      return false;
+      console.error('Auth check error:', error);
+      logout();
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Register function
-  const register = async (name, email, password) => {
+  const login = async (loginData) => {
     try {
-      setIsLoading(true);
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('authToken', data.token);
-        setUser(data.user);
-        return true;
-      } else {
-        const errorData = await response.json();
-        console.error('Registration failed:', errorData.message);
-        return false;
+      // Tokens are already stored by the API interceptor
+      setIsAuthenticated(true);
+      
+      if (loginData.admin) {
+        setUser(loginData.admin);
+        localStorage.setItem('user', JSON.stringify(loginData.admin));
       }
+      
+      return true;
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('Login context error:', error);
       return false;
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  // Logout function
   const logout = () => {
-    localStorage.removeItem('authToken');
+    TokenManager.removeTokens();
+    setIsAuthenticated(false);
     setUser(null);
   };
 
+  const updateUser = (userData) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+
   const value = {
+    isAuthenticated,
     user,
-    isAuthenticated: !!user,
     isLoading,
     login,
     logout,
-    register,
+    updateUser,
+    checkAuthStatus
   };
 
   return (
@@ -120,15 +86,6 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-// Custom hook to use auth context
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 };
 
 export default AuthContext;

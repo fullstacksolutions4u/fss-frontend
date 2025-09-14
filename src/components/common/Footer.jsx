@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import logo from '../../assets/logo_transparent.png';
+import logo from '../../assets/logo-min.png';
 
 const Footer = () => {
   const [newsletterEmail, setNewsletterEmail] = useState('');

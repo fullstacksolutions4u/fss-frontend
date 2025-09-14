@@ -1,10 +1,7 @@
-// File: src/context/AppContext.jsx
 import React, { createContext, useContext, useState } from 'react';
-
-// Create Context
 const AppContext = createContext();
 
-// App Provider Component
+
 export const AppProvider = ({ children }) => {
   const [appState, setAppState] = useState({
     contacts: [],

@@ -1,161 +1,190 @@
-import React, { Suspense, lazy } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
-import { AppProvider } from "./context/AppContext";
-import Navbar from "./components/common/Navbar";
-import Footer from "./components/common/Footer";
-import Lottie from "lottie-react";
-import spinnerAnimation from "./assets/animations/spinner.json";
-const Home = lazy(() => import("./pages/Home"));
-const ServicesPage = lazy(() => import("./pages/Services"));
-const Admin = lazy(() => import("./pages/Admin"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const SoftwareDevelopment = lazy(() => import("./pages/SoftwareDevelopment"));
-const DigitalMarketing = lazy(() => import("./pages/DigitalMarketing"));
-const VideoEditing = lazy(() => import("./pages/VideoEditing"));
+import React, { useState, useEffect } from 'react';
+import Home from './pages/Home';
+import AdminLogin from './pages/AdminLogin';
+import AdminDashboard from './pages/AdminDashboard';
+import Navbar from "./components/common/Navbar"
 
-const PageLoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-teal-50">
-    <div className="text-center">
-      <div className="w-24 h-24 mx-auto mb-4">
-        <Lottie
-          animationData={spinnerAnimation}
-          loop={true}
-          autoplay={true}
-          style={{ width: "100%", height: "100%" }}
-        />
+// Token management utilities
+const TokenManager = {
+  getToken: () => localStorage.getItem('authToken'),
+  getUser: () => {
+    try {
+      const userData = localStorage.getItem('user');
+      return userData ? JSON.parse(userData) : null;
+    } catch {
+      return null;
+    }
+  },
+  isTokenExpired: (token) => {
+    if (!token) return true;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Date.now() / 1000;
+      return payload.exp < currentTime;
+    } catch (error) {
+      return true;
+    }
+  },
+  clearAuth: () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+  }
+};
+
+// Route configuration
+const routes = {
+  '/': {
+    component: Home,
+    protected: false
+  },
+  '/admin/login': {
+    component: AdminLogin,
+    protected: false
+  },
+  '/admin/dashboard': {
+    component: AdminDashboard,
+    protected: true
+  }
+};
+
+// Route handler component
+// Route handler component
+const RouteHandler = ({ 
+  currentPath, 
+  isAuthenticated, 
+  user, 
+  onLoginSuccess, 
+  onLogout 
+}) => {
+  const route = routes[currentPath];
+  const isAdminRoute = currentPath.startsWith('/admin');
+  
+  // If route doesn't exist, default to Home
+  if (!route) {
+    return (
+      <div>
+        <Navbar currentPath={currentPath} />
+        <Home />
       </div>
-      <p className="text-slate-600 font-medium">Loading...</p>
-    </div>
-  </div>
-);
-
-const SectionLoadingFallback = () => (
-  <div className="min-h-[400px] flex items-center justify-center">
-    <div className="text-center">
-      <div className="w-16 h-16 mx-auto mb-2">
-        <Lottie
-          animationData={spinnerAnimation}
-          loop={true}
-          autoplay={true}
-          style={{ width: "100%", height: "100%" }}
-        />
-      </div>
-      <p className="text-slate-500 text-sm">Loading content...</p>
-    </div>
-  </div>
-);
-
-const App = () => {
+    );
+  }
+  
+  // Check if route is protected and user is not authenticated
+  if (route.protected && !isAuthenticated) {
+    window.location.href = '/admin/login';
+    return null;
+  }
+  
+  // Render the component based on route
+  const Component = route.component;
+  
+  if (currentPath === '/admin/login') {
+    return <Component onLoginSuccess={onLoginSuccess} />;
+  }
+  
+  if (currentPath === '/admin/dashboard') {
+    return <Component user={user} onLogout={onLogout} />;
+  }
+  
+  // For public pages, include navbar
   return (
-    <Router>
-      <AuthProvider>
-        <AppProvider>
-          <div className="App min-h-screen bg-gradient-to-br from-slate-50 via-white to-teal-50">
-            {/* Navigation - Load immediately */}
-            <Navbar />
+    <div>
+      <Navbar currentPath={currentPath} />
+      <Component />
+    </div>
+  );
+};
 
-            {/* Main Content with Suspense boundaries */}
-            <main className="relative">
-              <Suspense fallback={<PageLoadingSpinner />}>
-                <Routes>
-                  {/* Public Routes */}
-                  <Route
-                    path="/"
-                    element={
-                      <Suspense fallback={<PageLoadingSpinner />}>
-                        <Home />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="/home"
-                    element={
-                      <Suspense fallback={<PageLoadingSpinner />}>
-                        <Home />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="/services"
-                    element={
-                      <Suspense fallback={<PageLoadingSpinner />}>
-                        <ServicesPage />
-                      </Suspense>
-                    }
-                  />
+// Loading spinner component
+const LoadingSpinner = () => (
+  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <p className="text-gray-600">Loading...</p>
+    </div>
+  </div>
+);
 
-                  {/* Individual Service Routes */}
-                  <Route
-                    path="/services/software-development"
-                    element={
-                      <Suspense fallback={<PageLoadingSpinner />}>
-                        <SoftwareDevelopment />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="/services/digital-marketing"
-                    element={
-                      <Suspense fallback={<PageLoadingSpinner />}>
-                        <DigitalMarketing />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="/services/video-editing"
-                    element={
-                      <Suspense fallback={<PageLoadingSpinner />}>
-                        <VideoEditing />
-                      </Suspense>
-                    }
-                  />
+// Main App component
+const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
 
-                  {/* Admin Routes */}
-                  <Route
-                    path="/admin"
-                    element={
-                      <Suspense fallback={<PageLoadingSpinner />}>
-                        <Admin />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="/admin/dashboard"
-                    element={
-                      <Suspense fallback={<PageLoadingSpinner />}>
-                        <Admin />
-                      </Suspense>
-                    }
-                  />
-                  <Route
-                    path="/admin/users"
-                    element={
-                      <Suspense fallback={<PageLoadingSpinner />}>
-                        <Admin />
-                      </Suspense>
-                    }
-                  />
+  // Listen to browser navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
-                  {/* 404 Route */}
-                  <Route
-                    path="*"
-                    element={
-                      <Suspense fallback={<PageLoadingSpinner />}>
-                        <NotFound />
-                      </Suspense>
-                    }
-                  />
-                </Routes>
-              </Suspense>
-            </main>
+  // Check authentication status on mount
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
 
-            {/* Footer - Load immediately for SEO */}
-            <Footer />
-          </div>
-        </AppProvider>
-      </AuthProvider>
-    </Router>
+  const checkAuthStatus = () => {
+    try {
+      const token = TokenManager.getToken();
+      const userData = TokenManager.getUser();
+
+      if (token && !TokenManager.isTokenExpired(token)) {
+        setIsAuthenticated(true);
+        setUser(userData);
+      } else {
+        TokenManager.clearAuth();
+        setIsAuthenticated(false);
+        setUser(null);
+      }
+    } catch (error) {
+      console.error('Auth check error:', error);
+      TokenManager.clearAuth();
+      setIsAuthenticated(false);
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLoginSuccess = (loginData) => {
+    if (loginData.accessToken) {
+      localStorage.setItem('authToken', loginData.accessToken);
+    }
+    if (loginData.refreshToken) {
+      localStorage.setItem('refreshToken', loginData.refreshToken);
+    }
+    if (loginData.admin) {
+      localStorage.setItem('user', JSON.stringify(loginData.admin));
+      setUser(loginData.admin);
+    }
+    
+    setIsAuthenticated(true);
+    window.location.href = '/admin/dashboard';
+  };
+
+  const handleLogout = () => {
+    TokenManager.clearAuth();
+    setIsAuthenticated(false);
+    setUser(null);
+    window.location.href = '/admin/login';
+  };
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  return (
+    <RouteHandler
+      currentPath={currentPath}
+      isAuthenticated={isAuthenticated}
+      user={user}
+      onLoginSuccess={handleLoginSuccess}
+      onLogout={handleLogout}
+    />
   );
 };
 
