@@ -3,6 +3,7 @@ import Home from './pages/Home';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import Navbar from "./components/common/Navbar";
+import Footer from "./components/common/Footer"
 import Lottie from "lottie-react";
 import spinner from "./assets/animations/spinner.json";
 
@@ -56,6 +57,7 @@ const RouteHandler = ({ currentPath, isAuthenticated, user, onLoginSuccess, onLo
       <div>
         <Navbar currentPath={currentPath} />
         <Home />
+        <Footer />
       </div>
     );
   }
@@ -79,6 +81,7 @@ const RouteHandler = ({ currentPath, isAuthenticated, user, onLoginSuccess, onLo
     <div>
       <Navbar currentPath={currentPath} />
       <Component />
+      <Footer />
     </div>
   );
 };
