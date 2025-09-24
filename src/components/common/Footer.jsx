@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import logo from '../../assets/logo-min.png';
+import logo from '../../assets/logo.png';
 
 const Footer = () => {
   const [newsletterEmail, setNewsletterEmail] = useState('');
@@ -107,7 +107,7 @@ const Footer = () => {
             <img
               src={logo}
               alt="Full Stack Solutions Logo"
-              className="h-36 w-auto"
+              className="h-36 w-auto rounded-full"
             />
           </div>
           
