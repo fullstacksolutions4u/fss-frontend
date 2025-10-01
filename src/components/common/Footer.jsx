@@ -36,58 +36,6 @@ const Footer = () => {
     },
   ];
 
-  const handleNewsletterSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!newsletterEmail || !newsletterEmail.includes('@')) {
-      setNewsletterStatus({
-        type: 'error',
-        message: 'Please enter a valid email address'
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-    setNewsletterStatus(null);
-
-    try {
-      // Simulate API call - replace with your actual endpoint
-      const response = await fetch('/api/newsletter', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: newsletterEmail,
-          timestamp: new Date().toISOString()
-        }),
-      });
-
-      if (response.ok) {
-        setNewsletterStatus({
-          type: 'success',
-          message: 'Thank you for subscribing!'
-        });
-        setNewsletterEmail('');
-      } else {
-        throw new Error('Subscription failed');
-      }
-    } catch (error) {
-      console.error('Newsletter subscription error:', error);
-      setNewsletterStatus({
-        type: 'error',
-        message: 'Subscription failed. Please try again.'
-      });
-    } finally {
-      setIsSubmitting(false);
-      
-      // Auto-hide status after 3 seconds
-      setTimeout(() => {
-        setNewsletterStatus(null);
-      }, 3000);
-    }
-  };
-
   return (
     <footer className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden">
       
