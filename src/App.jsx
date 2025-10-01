@@ -94,7 +94,6 @@ const LoadingSpinner = () => (
         loop={true}
         className="w-20 h-20 mx-auto mb-4"
       />
-      <p className="text-gray-600">Loading...</p>
     </div>
   </div>
 );
